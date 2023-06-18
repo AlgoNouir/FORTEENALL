@@ -1,15 +1,16 @@
 {
-  "name": "forteenall",
-  "version": "1.0.0",
-  "description": "all for one",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "algonouir",
-  "license": "ISC",
-  "devDependencies": {
-    "nodemon": "^2.0.22",
-    "ts-node": "^10.9.1"
-  }
+    "name": "forteenall",
+    "version": "1.0.0",
+    "description": "all for one",
+    "main": "index.ts",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "nodemon index.ts"
+    },
+    "author": "algoNoir",
+    "license": "ISC",
+    "devDependencies": {
+        "nodemon": "^2.0.22",
+        "ts-node": "^10.9.1"
+    }
 }
