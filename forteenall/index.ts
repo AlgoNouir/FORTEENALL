@@ -1,3 +1,5 @@
+import { createServer } from "http";
+
 export type pathType = {
     [key: string]: pathType | actionType;
 };
@@ -11,7 +13,7 @@ const director = (path: pathType, last: string = ""): [string, Function][] => {
         if (typeof value === "object") {
             result = [...result, ...director(value, `${last}/${endpoint}`)];
         } else {
-            result = [...result, [`${last}/${endpoint}/`, value]];
+            result = [...result, [`${last}/${endpoint}`, value]];
         }
     });
 
@@ -19,5 +21,17 @@ const director = (path: pathType, last: string = ""): [string, Function][] => {
 };
 
 export default function (path: pathType) {
-    console.log(director(path));
+    const paths = director(path);
+    createServer((req, res) => {
+        console.log(req.url);
+
+        if (req.url !== undefined && paths.map((p) => p[0]).includes(req.url)) {
+            console.log("i got url");
+            res.write("ok");
+            res.end();
+        } else {
+            res.write("not ok");
+            res.end();
+        }
+    }).listen(3000, () => "hello world");
 }
