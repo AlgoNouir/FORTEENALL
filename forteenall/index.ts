@@ -1,19 +1,34 @@
 import { createServer } from "http";
+import { Action } from "./actions";
 
 export type pathType = {
-    [key: string]: pathType | actionType;
+    [key: string]: pathType | typeof Action;
 };
 
-export type actionType = Function;
-
-const director = (path: pathType, last: string = ""): [string, Function][] => {
-    let result: [string, Function][] = [];
+const director = (
+    path: pathType,
+    last: string = "",
+    methods: string[] = []
+): [string, Action, string[]][] => {
+    let result: [string, Action, string[]][] = [];
 
     Object.entries(path).map(([endpoint, value]) => {
         if (typeof value === "object") {
+            // if value of endpoint is not an Action
+            // directing again and set on result
             result = [...result, ...director(value, `${last}/${endpoint}`)];
-        } else {
-            result = [...result, [`${last}/${endpoint}`, value]];
+        } else if (typeof value === "function") {
+            // if value === action type
+
+            // set up action
+            const tmp = new value({});
+
+            // get action method supports
+            const methods = Object.getOwnPropertyNames(
+                Object.getPrototypeOf(tmp)
+            ).filter((method) => method.toUpperCase() === method);
+
+            result = [...result, [`${last}/${endpoint}`, tmp, methods]];
         }
     });
 
@@ -22,9 +37,9 @@ const director = (path: pathType, last: string = ""): [string, Function][] => {
 
 export default function (path: pathType) {
     const paths = director(path);
-    createServer((req, res) => {
-        console.log(req.url);
+    console.log(paths);
 
+    createServer((req, res) => {
         if (req.url !== undefined && paths.map((p) => p[0]).includes(req.url)) {
             console.log("i got url");
             res.write("ok");
