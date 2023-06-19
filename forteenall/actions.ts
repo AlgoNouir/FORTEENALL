@@ -1,8 +1,8 @@
 export class Action {
-    config = {};
+    config: {
+        [key: string]: any;
+    };
     constructor(config: any) {
-        console.log("one action set up");
-
         this.config = config;
     }
 }

@@ -1,5 +1,16 @@
+import { Logger } from "@tsed/logger";
 import { createServer } from "http";
 import { Action } from "./actions";
+
+const logger = new Logger("REQ");
+logger.appenders.set("request", {
+    type: "console",
+    layout: {
+        type: "pattern",
+        pattern: "%z > %[ %d{yyyy/MM/dd hh:mm:ss} %]  %m",
+    },
+    level: ["info"],
+});
 
 export type pathType = {
     [key: string]: pathType | typeof Action;
@@ -7,8 +18,7 @@ export type pathType = {
 
 const director = (
     path: pathType,
-    last: string = "",
-    methods: string[] = []
+    last: string = ""
 ): [string, Action, string[]][] => {
     let result: [string, Action, string[]][] = [];
 
@@ -36,15 +46,20 @@ const director = (
 };
 
 export default function (path: pathType) {
+    logger.warn("start server ...");
     const paths = director(path);
-    console.log(paths);
+    logger.warn("set path done.");
 
     createServer((req, res) => {
+        const log = `(${req.method}) ${req.url} - `;
         if (req.url !== undefined && paths.map((p) => p[0]).includes(req.url)) {
-            console.log("i got url");
+            logger.info(log, "ok");
+
             res.write("ok");
             res.end();
         } else {
+            logger.error(log, "not ok");
+
             res.write("not ok");
             res.end();
         }
