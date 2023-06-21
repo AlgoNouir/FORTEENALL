@@ -19,14 +19,14 @@ export type pathType = {
 const director = (
     path: pathType,
     last: string = ""
-): [string, Action, string[]][] => {
-    let result: [string, Action, string[]][] = [];
+): { [key: string]: [Action, string[]] } => {
+    let result: { [key: string]: [Action, string[]] } = {};
 
     Object.entries(path).map(([endpoint, value]) => {
         if (typeof value === "object") {
             // if value of endpoint is not an Action
             // directing again and set on result
-            result = [...result, ...director(value, `${last}/${endpoint}`)];
+            result = { ...result, ...director(value, `${last}/${endpoint}`) };
         } else if (typeof value === "function") {
             // if value === action type
 
@@ -38,7 +38,7 @@ const director = (
                 Object.getPrototypeOf(tmp)
             ).filter((method) => method.toUpperCase() === method);
 
-            result = [...result, [`${last}/${endpoint}`, tmp, methods]];
+            result = { ...result, [`${last}/${endpoint}`]: [tmp, methods] };
         }
     });
 
@@ -50,9 +50,11 @@ export default function (path: pathType) {
     const paths = director(path);
     logger.warn("set path done.");
 
+    console.log(paths);
+
     createServer((req, res) => {
         const log = `(${req.method}) ${req.url} - `;
-        if (req.url !== undefined && paths.map((p) => p[0]).includes(req.url)) {
+        if (req.url !== undefined && paths[req.url] !== undefined) {
             logger.info(log, "ok");
 
             res.write("ok");
@@ -63,5 +65,7 @@ export default function (path: pathType) {
             res.write("not ok");
             res.end();
         }
-    }).listen(3000, () => "hello world");
+    }).listen(3000, () =>
+        logger.warn("start deployment server on http://localhost:3000")
+    );
 }
