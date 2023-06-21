@@ -7,20 +7,20 @@ logger.appenders.set("request", {
     type: "console",
     layout: {
         type: "pattern",
-        pattern: "%z > %[ %d{yyyy/MM/dd hh:mm:ss} %]  %m",
+        pattern: "> %[ %d{yyyy/MM/dd hh:mm:ss} %]  %m",
     },
     level: ["info"],
 });
 
 export type pathType = {
-    [key: string]: pathType | typeof Action;
+    [key: string]: pathType | any;
 };
 
 const director = (
     path: pathType,
     last: string = ""
-): { [key: string]: [Action, string[]] } => {
-    let result: { [key: string]: [Action, string[]] } = {};
+): { [key: string]: [any, string[]] } => {
+    let result: { [key: string]: [any, string[]] } = {};
 
     Object.entries(path).map(([endpoint, value]) => {
         if (typeof value === "object") {
@@ -31,14 +31,17 @@ const director = (
             // if value === action type
 
             // set up action
-            const tmp = new value({});
+            const actionClass = new value({});
 
             // get action method supports
             const methods = Object.getOwnPropertyNames(
-                Object.getPrototypeOf(tmp)
+                Object.getPrototypeOf(actionClass)
             ).filter((method) => method.toUpperCase() === method);
 
-            result = { ...result, [`${last}/${endpoint}`]: [tmp, methods] };
+            result = {
+                ...result,
+                [`${last}/${endpoint}`]: [actionClass, methods],
+            };
         }
     });
 
@@ -56,9 +59,17 @@ export default function (path: pathType) {
         const log = `(${req.method}) ${req.url} - `;
         if (req.url !== undefined && paths[req.url] !== undefined) {
             logger.info(log, "ok");
+            if (
+                req.method !== undefined &&
+                paths[req.url][1].includes(req.method)
+            ) {
+                paths[req.url][0][req.method](req, res);
+            } else {
+                logger.error(log, "not ok");
 
-            res.write("ok");
-            res.end();
+                res.write("not ok");
+                res.end();
+            }
         } else {
             logger.error(log, "not ok");
 
