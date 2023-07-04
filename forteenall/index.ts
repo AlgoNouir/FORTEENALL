@@ -56,14 +56,15 @@ export default function (path: pathType) {
     console.log(paths);
 
     createServer((req, res) => {
-        const log = `(${req.method}) ${req.url} - `;
+        const log = `(${req.method}) ${req.url} `;
         if (req.url !== undefined && paths[req.url] !== undefined) {
             logger.info(log, "ok");
             if (
                 req.method !== undefined &&
                 paths[req.url][1].includes(req.method)
             ) {
-                paths[req.url][0][req.method](req, res);
+                res.write(paths[req.url][0][req.method](req, res));
+                res.end();
             } else {
                 logger.error(log, "not ok");
 
