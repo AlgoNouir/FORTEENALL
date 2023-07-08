@@ -1,7 +1,8 @@
-import { Action } from "../forteenall/actions";
+import { Action, Response, Render } from "../forteenall/actions";
+import TestView from "../views/test";
 
 export default class Test extends Action {
-    GET(req, h) {
-        return "hello forteenall in Action";
+    GET() {
+        return new Render(TestView);
     }
 }

@@ -63,7 +63,7 @@ export default function (path: pathType) {
                 req.method !== undefined &&
                 paths[req.url][1].includes(req.method)
             ) {
-                res.write(paths[req.url][0][req.method](req, res));
+                res.write(paths[req.url][0][req.method](req, res).render(res));
                 res.end();
             } else {
                 logger.error(log, "not ok");
